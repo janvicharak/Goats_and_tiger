@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Goats and Tigers Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fefbe3;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #game-container {
+    width: 800px;
+    height: 700px;
+    margin: 20px auto;
+    position: relative;
+    background-color: #e8d8b0;
+    border: 10px solid #8B4513;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    display: none;
+    padding-top: 80px; /* Space for status bar */
+    box-sizing: border-box; /* Include padding in height */
+}
+        #board {
+    width: 780px;
+    height: 610px;
+    margin: 0 auto;
+    position: relative;
+    background-color: #fefbe3;
+}
+        .point {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #333;
+            cursor: pointer;
+            z-index: 3;
+        }
+        .tiger {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: orange;
+            border-radius: 50%;
+            border: 2px solid darkorange;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            z-index: 4;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .goat {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+            border: 2px solid #999;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            font-weight: bold;
+            z-index: 4;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        .line {
+            position: absolute;
+            background-color:#f4a52d;
+            z-index: 1;
+            transform-origin: 0 0;
+        }
+        #status-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 5;
+}
+
+#status {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #menu {
+            background-color:#fec62b;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        #menu h1 {
+            color: #8B4513;
+            margin-bottom: 30px;
+        }
+        .menu-section {
+            margin-bottom: 20px;
+        }
+        .menu-section h2 {
+            color: #000;
+            margin-bottom: 15px;
+        }
+        .mode-btn {
+            display: block;
+            width: 250px;
+            margin: 10px auto;
+            padding: 15px;
+            font-size: 18px;
+        }
+        .selected {
+            background-color: #2E7D32;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        #start-game {
+            background-color: #f44336;
+            font-size: 20px;
+            padding: 15px 30px;
+            margin-top: 30px;
+        }
+        #start-game:hover {
+            background-color: #d32f2f;
+        }
+        .highlight {
+            box-shadow: 0 0 10px 5px yellow !important;
+        }
+        .possible-move {
+            box-shadow: 0 0 10px 5px rgba(0, 255, 0, 0.7) !important;
+        }
+        #player-info {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+    text-align: center;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+        .rules {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-width: 600px;
+            text-align: left;
+            display: none;
+        }
+        .rules h3 {
+            color: #8B4513;
+            margin-top: 0;
+        }
+        #show-rules-btn {
+            background-color: #2196F3;
+            margin-top: 15px;
+        }
+        #show-rules-btn:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div id="menu">
+        <h1>Goats and Tigers Game</h1>
+        
+        <div class="menu-section" id="player-selection">
+            <h2>Select Your Side</h2>
+            <button id="play-tiger" class="mode-btn">Play as Tiger</button>
+            <button id="play-goat" class="mode-btn">Play as Goat</button>
+        </div>
+        
+        <button id="start-game">Start Game</button>
+        <button id="show-rules-btn">Show Rules</button>
+        
+        <div class="rules" id="rules-section">
+            <h3>Game Rules:</h3>
+            <p><strong>Tigers (Orange):</strong> Can move to adjacent empty spots or jump over a goat to capture it (landing in an empty spot).</p>
+            <p><strong>Goats (White):</strong> First 15 goats are placed one by one on empty spots. After all are placed, they can move to adjacent empty spots.</p>
+            <p><strong>Winning:</strong> Tigers win by capturing 5 goats. Goats win by blocking all tigers.</p>
+        </div>
+    </div>
+
+   <div id="game-container">
+    <div id="status-bar">
+        <div id="status">
+            <div id="turn-info">Select game mode to start</div>
+            <div id="goat-info"></div>
+        </div>
+        <div id="player-info"></div>
+    </div>
+    <div id="board"></div>
+</div>
+
+    <div id="controls" style="display: none;">
+        <button id="new-game">New Game</button>
+    </div>
+
+    <script>
+        class Coin {
+            constructor(x, y, name) {
+                this.X = x;
+                this.Y = y;
+                this.point_name = name;
+                this.tiger = false;
+                this.goat = false;
+                this.vacant = true;
+                this.left = null;
+                this.right = null;
+                this.top = null;
+                this.bottom = null;
+            }
+
+            direction(L, R, T, B) {
+                this.left = L;
+                this.right = R;
+                this.top = T;
+                this.bottom = B;
+            }
+        }
+
+        class Board {
+            constructor() {
+                this.p = new Array(23);
+                this.tigers_move = false;
+                this.goatInsertionEnded = false;
+                this.goatWon = false;
+                this.tigerWon = false;
+                this.noOfGoatsInserted = 0;
+                this.goatKilled = 0;
+                this.totalNoOfGoatOnTheBoard = 0;
+
+                // Initialize points
+                this.p[0] = new Coin(390, 20, "0");
+                this.p[1] = new Coin(60, 235, "1");
+                this.p[2] = new Coin(265, 235, "2");
+                this.p[3] = new Coin(355, 235, "3");
+                this.p[4] = new Coin(445, 235, "4");
+                this.p[5] = new Coin(520, 235, "5");
+                this.p[6] = new Coin(720, 235, "6");
+                this.p[7] = new Coin(63, 335, "7");
+                this.p[8] = new Coin(208, 335, "8");
+                this.p[9] = new Coin(330, 335, "9");
+                this.p[10] = new Coin(465, 335, "10");
+                this.p[11] = new Coin(575, 335, "11");
+                this.p[12] = new Coin(723, 335, "12");
+                this.p[13] = new Coin(65, 420, "13");
+                this.p[14] = new Coin(158, 420, "14");
+                this.p[15] = new Coin(315, 420, "15");
+                this.p[16] = new Coin(485, 420, "16");
+                this.p[17] = new Coin(630, 420, "17");
+                this.p[18] = new Coin(700, 420, "18");
+                this.p[19] = new Coin(55, 600, "19");
+                this.p[20] = new Coin(278, 600, "20");
+                this.p[21] = new Coin(525, 600, "21");
+                this.p[22] = new Coin(730, 600, "22");
+
+                this.directions();
+                this.initialCoinPlacement();
+            }
+
+            directions() {
+                this.p[0].direction(this.p[2], this.p[3], this.p[4], this.p[5]);
+                this.p[1].direction(null, this.p[2], null, this.p[7]);
+                this.p[2].direction(this.p[1], this.p[3], this.p[0], this.p[8]);
+                this.p[3].direction(this.p[2], this.p[4], this.p[0], this.p[9]);
+                this.p[4].direction(this.p[3], this.p[5], this.p[0], this.p[10]);
+                this.p[5].direction(this.p[4], this.p[6], this.p[0], this.p[11]);
+                this.p[6].direction(this.p[5], null, null, this.p[12]);
+                this.p[7].direction(null, this.p[8], this.p[1], this.p[13]);
+                this.p[8].direction(this.p[7], this.p[9], this.p[2], this.p[14]);
+                this.p[9].direction(this.p[8], this.p[10], this.p[3], this.p[15]);
+                this.p[10].direction(this.p[9], this.p[11], this.p[4], this.p[16]);
+                this.p[11].direction(this.p[10], this.p[12], this.p[5], this.p[17]);
+                this.p[12].direction(this.p[11], null, this.p[6], this.p[18]);
+                this.p[13].direction(null, this.p[14], this.p[7], null);
+                this.p[14].direction(this.p[13], this.p[15], this.p[8], this.p[19]);
+                this.p[15].direction(this.p[14], this.p[16], this.p[9], this.p[20]);
+                this.p[16].direction(this.p[15], this.p[17], this.p[10], this.p[21]);
+                this.p[17].direction(this.p[16], this.p[18], this.p[11], this.p[22]);
+                this.p[18].direction(this.p[17], null, this.p[12], null);
+                this.p[19].direction(null, this.p[20], this.p[14], null);
+                this.p[20].direction(this.p[19], this.p[21], this.p[15], null);
+                this.p[21].direction(this.p[20], this.p[22], this.p[16], null);
+                this.p[22].direction(this.p[21], null, this.p[17], null);
+            }
+
+            initialCoinPlacement() {
+                this.add_tiger(this.p[0]);
+                this.add_tiger(this.p[3]);
+                this.add_tiger(this.p[4]);
+            }
+
+            add_goat(positionForGoat) {
+                if (!positionForGoat.vacant) return false;
+                positionForGoat.goat = true;
+                positionForGoat.vacant = false;
+                this.totalNoOfGoatOnTheBoard++;
+                this.noOfGoatsInserted++;
+                return true;
+            }
+
+            add_tiger(positionForTiger) {
+                positionForTiger.tiger = true;
+                positionForTiger.vacant = false;
+            }
+
+            move_coin(origin, destination) {
+                let moveSuccess = false;
+                
+                if (origin.tiger) {
+                    // Check if this is a valid adjacent move
+                    if (origin.left === destination || 
+                        origin.right === destination || 
+                        origin.top === destination || 
+                        origin.bottom === destination) {
+                        if (destination.vacant) {
+                            origin.tiger = false;
+                            destination.tiger = true;
+                            origin.vacant = true;
+                            destination.vacant = false;
+                            moveSuccess = true;
+                        }
+                    }
+                    // Check if this is a valid capture move (jumping over a goat)
+                    else if (this.isCaptureMove(origin, destination)) {
+                        const middlePoint = this.getMiddlePoint(origin, destination);
+                        if (middlePoint && middlePoint.goat && destination.vacant) {
+                            middlePoint.goat = false;
+                            middlePoint.vacant = true;
+                            this.totalNoOfGoatOnTheBoard--;
+                            this.goatKilled++;
+                            
+                            origin.tiger = false;
+                            destination.tiger = true;
+                            origin.vacant = true;
+                            destination.vacant = false;
+                            moveSuccess = true;
+                        }
+                    }
+                } 
+                else if (origin.goat) {
+                    // For goats, they can move to any vacant adjacent position
+                    if (origin.left === destination || 
+                        origin.right === destination || 
+                        origin.top === destination || 
+                        origin.bottom === destination) {
+                        if (destination.vacant) {
+                            origin.goat = false;
+                            destination.goat = true;
+                            origin.vacant = true;
+                            destination.vacant = false;
+                            moveSuccess = true;
+                        }
+                    }
+                }
+
+                return moveSuccess;
+            }
+
+            isCaptureMove(from, to) {
+                // Check if this is a jump move (two steps in one direction with a goat in between)
+                if (from.left && from.left.left === to && from.left.goat) return true;
+                if (from.right && from.right.right === to && from.right.goat) return true;
+                if (from.top && from.top.top === to && from.top.goat) return true;
+                if (from.bottom && from.bottom.bottom === to && from.bottom.goat) return true;
+                return false;
+            }
+
+            getMiddlePoint(from, to) {
+                if (from.left && from.left.left === to) return from.left;
+                if (from.right && from.right.right === to) return from.right;
+                if (from.top && from.top.top === to) return from.top;
+                if (from.bottom && from.bottom.bottom === to) return from.bottom;
+                return null;
+            }
+
+            isGoatWinner(tiger_status) {
+                let rightNotClear = false, leftNotClear = false, topNotClear = false, bottomNotClear = false;
+
+                if (tiger_status === this.p[0]) {
+                    if (this.p[2].vacant === false && this.p[3].vacant === false && this.p[4].vacant === false && this.p[5].vacant === false &&
+                        this.p[8].vacant === false && this.p[9].vacant === false && this.p[10].vacant === false && this.p[11].vacant === false)
+                        return true;
+                    else
+                        return false;
+                }
+
+                if (tiger_status.right === null) {
+                    rightNotClear = true;
+                } else if (tiger_status.right.tiger === true) {
+                    rightNotClear = true;
+                } else if (tiger_status.right.goat === true) {
+                    if (tiger_status.right.right === null) {
+                        rightNotClear = true;
+                    } else if (tiger_status.right.right.vacant === false) {
+                        rightNotClear = true;
+                    } else {
+                        rightNotClear = false;
+                    }
+                }
+
+                if (tiger_status.left === null) {
+                    leftNotClear = true;
+                } else if (tiger_status.left.tiger === true) {
+                    leftNotClear = true;
+                } else if (tiger_status.left.goat === true) {
+                    if (tiger_status.left.left === null) {
+                        leftNotClear = true;
+                    } else if (tiger_status.left.left.vacant === false) {
+                        leftNotClear = true;
+                    } else {
+                        leftNotClear = false;
+                    }
+                }
+
+                if (tiger_status.top === null) {
+                    topNotClear = true;
+                } else if (tiger_status.top.tiger === true) {
+                    topNotClear = true;
+                } else if (tiger_status.top.goat === true) {
+                    if (tiger_status.top.top === null) {
+                        topNotClear = true;
+                    } else if (tiger_status.top.top.vacant === false) {
+                        topNotClear = true;
+                    } else {
+                        topNotClear = false;
+                    }
+                }
+
+                if (tiger_status.bottom === null) {
+                    bottomNotClear = true;
+                } else if (tiger_status.bottom.tiger === true) {
+                    bottomNotClear = true;
+                } else if (tiger_status.bottom.goat === true) {
+                    if (tiger_status.bottom.bottom === null) {
+                        bottomNotClear = true;
+                    } else if (tiger_status.bottom.bottom.vacant === false) {
+                        bottomNotClear = true;
+                    } else {
+                        bottomNotClear = false;
+                    }
+                }
+
+                return rightNotClear && leftNotClear && topNotClear && bottomNotClear;
+            }
+
+            isTigerWinner() {
+                if (this.goatKilled >= 5) {
+                    this.tigerWon = true;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            takeDecision(i, j) {
+                if (this.p[i].tiger && this.tigers_move) {
+                    // Check if it's a valid move (adjacent or jump)
+                    if (this.isValidTigerMove(this.p[i], this.p[j])) {
+                        if (this.move_coin(this.p[i], this.p[j])) {
+                            this.tigers_move = false;
+                        }
+                    }
+                } 
+                else if (!this.tigers_move) {
+                    if (this.noOfGoatsInserted < 15 && i === j) {
+                        // Place a new goat only on vacant positions
+                        if (this.add_goat(this.p[i])) {
+                            this.tigers_move = true;
+                            if (this.noOfGoatsInserted === 15) {
+                                this.goatInsertionEnded = true;
+                            }
+                        }
+                    } 
+                    else if (this.noOfGoatsInserted >= 15) {
+                        if (this.p[i].goat && this.p[j].vacant) {
+                            if (this.move_coin(this.p[i], this.p[j])) {
+                                this.tigers_move = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            isValidTigerMove(from, to) {
+                // Check if it's an adjacent move
+                if (from.left === to || from.right === to || from.top === to || from.bottom === to) {
+                    return to.vacant;
+                }
+                
+                // Check if it's a valid capture move
+                if (this.isCaptureMove(from, to)) {
+                    const middle = this.getMiddlePoint(from, to);
+                    return middle && middle.goat && to.vacant;
+                }
+                
+                return false;
+            }
+        }
+
+        class GameUI {
+            constructor() {
+                this.board = new Board();
+                this.selectedPoint = null;
+                this.playerSide = null;
+                this.gameContainer = document.getElementById('game-container');
+                this.boardElement = document.getElementById('board');
+                this.turnInfo = document.getElementById('turn-info');
+                this.goatInfo = document.getElementById('goat-info');
+                this.playerInfo = document.getElementById('player-info');
+                this.controls = document.getElementById('controls');
+                this.menu = document.getElementById('menu');
+                this.rulesSection = document.getElementById('rules-section');
+                this.showRulesBtn = document.getElementById('show-rules-btn');
+                
+                this.setupMenuListeners();
+            }
+
+            setupMenuListeners() {                
+                document.getElementById('play-tiger').addEventListener('click', () => {
+                    this.selectSide('tiger');
+                });
+                
+                document.getElementById('play-goat').addEventListener('click', () => {
+                    this.selectSide('goat');
+                });
+                
+                document.getElementById('start-game').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                document.getElementById('new-game').addEventListener('click', () => {
+                    this.resetGame();
+                });
+                
+                this.showRulesBtn.addEventListener('click', () => {
+                    this.toggleRules();
+                });
+            }
+            
+            toggleRules() {
+                if (this.rulesSection.style.display === 'block') {
+                    this.rulesSection.style.display = 'none';
+                    this.showRulesBtn.textContent = 'Show Rules';
+                } else {
+                    this.rulesSection.style.display = 'block';
+                    this.showRulesBtn.textContent = 'Hide Rules';
+                }
+            }
+
+            selectSide(side) {
+                this.playerSide = side;
+                
+                document.getElementById('play-tiger').classList.remove('selected');
+                document.getElementById('play-goat').classList.remove('selected');
+                document.getElementById('play-' + side).classList.add('selected');
+            }
+
+            startGame() {
+                if (!this.playerSide) {
+                    alert("Please select your side first!");
+                    return;
+                }
+                
+                this.menu.style.display = 'none';
+                this.gameContainer.style.display = 'block';
+                this.controls.style.display = 'block';
+                
+                this.board = new Board();
+                this.selectedPoint = null;
+                this.renderBoard();
+                this.updateStatus();
+                
+                this.setupGameListeners();
+            }
+
+            drawLines() {
+                const existingLines = document.querySelectorAll('.line');
+                existingLines.forEach(line => line.remove());
+                
+                for (let i = 0; i < 23; i++) {
+                    const point = this.board.p[i];
+                    
+                    if (point.left) {
+                        this.drawLine(point, point.left);
+                    }
+                    
+                    if (point.right) {
+                        this.drawLine(point, point.right);
+                    }
+                    
+                    if (point.top) {
+                        this.drawLine(point, point.top);
+                    }
+                    
+                    if (point.bottom) {
+                        this.drawLine(point, point.bottom);
+                    }
+                }
+            }
+
+            drawLine(fromPoint, toPoint) {
+                const line = document.createElement('div');
+                line.className = 'line';
+                
+                const x1 = fromPoint.X;
+                const y1 = fromPoint.Y;
+                const x2 = toPoint.X;
+                const y2 = toPoint.Y;
+                
+                const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                
+                line.style.width = `${length}px`;
+                line.style.height = '2px';
+                line.style.left = `${x1}px`;
+                line.style.top = `${y1}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                
+                this.boardElement.appendChild(line);
+            }
+
+            renderBoard() {
+                this.boardElement.innerHTML = '';
+                this.drawLines();
+                
+                for (let i = 0; i < 23; i++) {
+                    const point = this.board.p[i];
+                    const pointElement = document.createElement('div');
+                    pointElement.className = 'point';
+                    pointElement.style.left = `${point.X - 10}px`;
+                    pointElement.style.top = `${point.Y - 10}px`;
+                    pointElement.dataset.index = i;
+                    this.boardElement.appendChild(pointElement);
+                }
+                
+                for (let i = 0; i < 23; i++) {
+                    const point = this.board.p[i];
+                    if (point.tiger) {
+                        const tigerElement = document.createElement('div');
+                        tigerElement.className = 'tiger';
+                        tigerElement.style.left = `${point.X - 20}px`;
+                        tigerElement.style.top = `${point.Y - 20}px`;
+                        tigerElement.textContent = 'T';
+                        tigerElement.dataset.index = i;
+                        this.boardElement.appendChild(tigerElement);
+                    }
+                }
+                
+                for (let i = 0; i < 23; i++) {
+                    const point = this.board.p[i];
+                    if (point.goat) {
+                        const goatElement = document.createElement('div');
+                        goatElement.className = 'goat';
+                        goatElement.style.left = `${point.X - 20}px`;
+                        goatElement.style.top = `${point.Y - 20}px`;
+                        goatElement.textContent = 'G';
+                        goatElement.dataset.index = i;
+                        this.boardElement.appendChild(goatElement);
+                    }
+                }
+            }
+
+            updateStatus() {
+                const tigers = [];
+                for (let i = 0; i < 23; i++) {
+                    if (this.board.p[i].tiger) {
+                        tigers.push(this.board.p[i]);
+                    }
+                }
+                
+                let allBlocked = true;
+                for (const tiger of tigers) {
+                    if (!this.board.isGoatWinner(tiger)) {
+                        allBlocked = false;
+                        break;
+                    }
+                }
+                
+                if (allBlocked) {
+                    this.board.goatWon = true;
+                }
+                
+                if (this.board.isTigerWinner()) {
+                    this.board.tigerWon = true;
+                }
+                
+                this.turnInfo.textContent = this.board.tigers_move ? "Tiger's Turn" : "Goat's Turn";
+                this.goatInfo.textContent = `Goats Killed: ${this.board.goatKilled} | Goats Placed: ${this.board.noOfGoatsInserted}/15`;
+                this.playerInfo.textContent = `You are playing as ${this.playerSide}`;
+                
+                if (this.board.goatWon) {
+                    alert("Goats win! All tigers are blocked.");
+                    this.resetGame();
+                } else if (this.board.tigerWon) {
+                    alert("Tigers win! They have killed 5 goats.");
+                    this.resetGame();
+                }
+                
+                const isComputerTurn = 
+                    (this.playerSide === 'tiger' && !this.board.tigers_move) || 
+                    (this.playerSide === 'goat' && this.board.tigers_move);
+                
+                if (isComputerTurn) {
+                    setTimeout(() => this.makeAIMove(), 500);
+                }
+            }
+
+            setupGameListeners() {
+                this.boardElement.addEventListener('click', (e) => {
+                    const isComputerTurn = 
+                        (this.playerSide === 'tiger' && !this.board.tigers_move) || 
+                        (this.playerSide === 'goat' && this.board.tigers_move);
+                    
+                    if (isComputerTurn) return;
+                    
+                    const pointElement = e.target.closest('.point, .tiger, .goat');
+                    if (!pointElement) return;
+                    
+                    const index = parseInt(pointElement.dataset.index);
+                    
+                    if (this.selectedPoint === null) {
+                        const point = this.board.p[index];
+                        
+                        // For tiger's turn, only select tigers
+                        if (this.board.tigers_move && !point.tiger) return;
+                        
+                        // For goat's turn
+                        if (!this.board.tigers_move) {
+                            // During placement phase, can select any vacant point
+                            if (this.board.noOfGoatsInserted < 15) {
+                                if (!point.vacant) return;
+                            } 
+                            // After placement phase, can only select goats
+                            else {
+                                if (!point.goat) return;
+                            }
+                        }
+                        
+                        this.selectedPoint = index;
+                        
+                        // Highlight selected piece and possible moves
+                        this.highlightSelection(index);
+                    } else {
+                        const fromIndex = this.selectedPoint;
+                        const toIndex = index;
+                        
+                        // Clear highlights
+                        this.clearHighlights();
+                        
+                        // Make the move
+                        this.board.takeDecision(fromIndex, toIndex);
+                        
+                        this.selectedPoint = null;
+                        
+                        this.renderBoard();
+                        this.updateStatus();
+                    }
+                });
+            }
+
+            highlightSelection(index) {
+                const elements = document.querySelectorAll('.point, .tiger, .goat');
+                elements.forEach(el => {
+                    if (parseInt(el.dataset.index) === index) {
+                        el.classList.add('highlight');
+                    }
+                });
+                
+                // Highlight possible moves
+                const point = this.board.p[index];
+                if (point.tiger) {
+                    // Highlight adjacent empty spots and possible jumps over goats
+                    this.highlightTigerMoves(point);
+                } else if (point.goat && this.board.noOfGoatsInserted >= 15) {
+                    // Highlight adjacent empty spots for goats
+                    this.highlightGoatMoves(point);
+                }
+            }
+
+            highlightTigerMoves(point) {
+                // Highlight adjacent moves
+                [point.left, point.right, point.top, point.bottom].forEach(adjacent => {
+                    if (adjacent && adjacent.vacant) {
+                        const index = this.findPointIndex(adjacent);
+                        const element = document.querySelector(`[data-index="${index}"]`);
+                        if (element) element.classList.add('possible-move');
+                    }
+                });
+                
+                // Highlight jump moves
+                [[point.left, point.left?.left],
+                 [point.right, point.right?.right],
+                 [point.top, point.top?.top],
+                 [point.bottom, point.bottom?.bottom]].forEach(([middle, target]) => {
+                    if (middle && target && middle.goat && target.vacant) {
+                        const index = this.findPointIndex(target);
+                        const element = document.querySelector(`[data-index="${index}"]`);
+                        if (element) element.classList.add('possible-move');
+                    }
+                });
+            }
+
+            highlightGoatMoves(point) {
+                // Highlight adjacent empty spots
+                [point.left, point.right, point.top, point.bottom].forEach(adjacent => {
+                    if (adjacent && adjacent.vacant) {
+                        const index = this.findPointIndex(adjacent);
+                        const element = document.querySelector(`[data-index="${index}"]`);
+                        if (element) element.classList.add('possible-move');
+                    }
+                });
+            }
+
+            clearHighlights() {
+                const elements = document.querySelectorAll('.point, .tiger, .goat');
+                elements.forEach(el => {
+                    el.classList.remove('highlight');
+                    el.classList.remove('possible-move');
+                });
+            }
+
+            makeAIMove() {
+                let fromIndex, toIndex;
+                let validMoveFound = false;
+                
+                if (this.board.tigers_move) {
+                    // Tiger's turn
+                    const tigerPositions = [];
+                    for (let i = 0; i < 23; i++) {
+                        if (this.board.p[i].tiger) {
+                            tigerPositions.push(i);
+                        }
+                    }
+                    
+                    // First try to find a capture move
+                    let captureMoveFound = false;
+                    for (const tigerIndex of tigerPositions) {
+                        const tiger = this.board.p[tigerIndex];
+                        
+                        const directions = [
+                            {dir: tiger.left, next: tiger.left?.left, middle: tiger.left},
+                            {dir: tiger.right, next: tiger.right?.right, middle: tiger.right},
+                            {dir: tiger.top, next: tiger.top?.top, middle: tiger.top},
+                            {dir: tiger.bottom, next: tiger.bottom?.bottom, middle: tiger.bottom}
+                        ];
+                        
+                        for (const {dir, next, middle} of directions) {
+                            if (dir && next && middle && middle.goat && next.vacant) {
+                                fromIndex = tigerIndex;
+                                toIndex = this.findPointIndex(next);
+                                if (this.board.move_coin(this.board.p[fromIndex], this.board.p[toIndex])) {
+                                    captureMoveFound = true;
+                                    this.board.tigers_move = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (captureMoveFound) break;
+                    }
+                    
+                    // If no capture move found, try adjacent moves
+                    if (!captureMoveFound) {
+                        const shuffledTigers = [...tigerPositions].sort(() => 0.5 - Math.random());
+                        for (const tigerIndex of shuffledTigers) {
+                            const tiger = this.board.p[tigerIndex];
+                            const adjacentMoves = [
+                                tiger.left,
+                                tiger.right,
+                                tiger.top,
+                                tiger.bottom
+                            ].filter(dir => dir && dir.vacant);
+                            
+                            if (adjacentMoves.length > 0) {
+                                const randomMove = adjacentMoves[Math.floor(Math.random() * adjacentMoves.length)];
+                                toIndex = this.findPointIndex(randomMove);
+                                if (this.board.move_coin(this.board.p[tigerIndex], this.board.p[toIndex])) {
+                                    this.board.tigers_move = false;
+                                    captureMoveFound = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    validMoveFound = captureMoveFound;
+                } else {
+                    // Goat's turn
+                    if (this.board.noOfGoatsInserted < 15) {
+                        // Place a goat only on vacant positions
+                        const vacantPositions = [];
+                        for (let i = 0; i < 23; i++) {
+                            if (this.board.p[i].vacant) {
+                                vacantPositions.push(i);
+                            }
+                        }
+                        
+                        if (vacantPositions.length > 0) {
+                            toIndex = vacantPositions[Math.floor(Math.random() * vacantPositions.length)];
+                            this.board.add_goat(this.board.p[toIndex]);
+                            this.board.tigers_move = true;
+                            validMoveFound = true;
+                            
+                            if (this.board.noOfGoatsInserted === 15) {
+                                this.board.goatInsertionEnded = true;
+                            }
+                        }
+                    } else {
+                        // Move existing goats
+                        const goatPositions = [];
+                        for (let i = 0; i < 23; i++) {
+                            if (this.board.p[i].goat) {
+                                goatPositions.push(i);
+                            }
+                        }
+                        
+                        // Try to find a goat that can move
+                        const shuffledGoats = [...goatPositions].sort(() => 0.5 - Math.random());
+                        for (const goatIndex of shuffledGoats) {
+                            const goat = this.board.p[goatIndex];
+                            const possibleMoves = [
+                                goat.left,
+                                goat.right,
+                                goat.top,
+                                goat.bottom
+                            ].filter(point => point && point.vacant);
+                            
+                            if (possibleMoves.length > 0) {
+                                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                                toIndex = this.findPointIndex(randomMove);
+                                if (this.board.move_coin(this.board.p[goatIndex], this.board.p[toIndex])) {
+                                    validMoveFound = true;
+                                    this.board.tigers_move = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (validMoveFound) {
+                    this.renderBoard();
+                    this.updateStatus();
+                }
+            }
+
+            findPointIndex(point) {
+                for (let i = 0; i < 23; i++) {
+                    if (this.board.p[i] === point) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            resetGame() {
+                this.menu.style.display = 'block';
+                this.gameContainer.style.display = 'none';
+                this.controls.style.display = 'none';
+                
+                this.playerSide = null;
+                document.getElementById('play-tiger').classList.remove('selected');
+                document.getElementById('play-goat').classList.remove('selected');
+            }
+        }
+
+        window.onload = () => {
+            new GameUI();
+        };
+    </script>
+</body>
+</html>
