@@ -187,6 +187,31 @@
         #show-rules-btn:hover {
             background-color: #0b7dda;
         }
+        #winner-display {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 18px;
+    color: #8B4513;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    display: none;
+}
+#message-display {
+    background-color: rgba(255, 215, 0, 0.9); /* Gold color for messages */
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    color: #8B4513;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    display: none;
+}
+        
     </style>
 </head>
 <body>
@@ -216,6 +241,8 @@
             <div id="turn-info">Select game mode to start</div>
             <div id="goat-info"></div>
         </div>
+        <div id="message-display" style="display: none;"></div> <!-- Add this line -->
+        <div id="winner-display" style="display: none;"></div> <!-- Add this line -->
         <div id="player-info"></div>
     </div>
     <div id="board"></div>
@@ -585,6 +612,7 @@
                 document.getElementById('play-goat').classList.remove('selected');
                 document.getElementById('play-' + side).classList.add('selected');
             }
+            
 
             startGame() {
                 if (!this.playerSide) {
@@ -992,6 +1020,77 @@
                 document.getElementById('play-tiger').classList.remove('selected');
                 document.getElementById('play-goat').classList.remove('selected');
             }
+             updateStatus() {
+        const tigers = [];
+        for (let i = 0; i < 23; i++) {
+            if (this.board.p[i].tiger) {
+                tigers.push(this.board.p[i]);
+            }
+        }
+        
+        let allBlocked = true;
+        for (const tiger of tigers) {
+            if (!this.board.isGoatWinner(tiger)) {
+                allBlocked = false;
+                break;
+            }
+        }
+        
+        if (allBlocked) {
+            this.board.goatWon = true;
+        }
+        
+        if (this.board.isTigerWinner()) {
+            this.board.tigerWon = true;
+        }
+        
+        this.turnInfo.textContent = this.board.tigers_move ? "Tiger's Turn" : "Goat's Turn";
+        this.goatInfo.textContent = `Goats Killed: ${this.board.goatKilled} | Goats Placed: ${this.board.noOfGoatsInserted}/15`;
+        this.playerInfo.textContent = `You are playing as ${this.playerSide}`;
+        
+        const winnerDisplay = document.getElementById('winner-display');
+        
+        if (this.board.goatWon) {
+            winnerDisplay.style.display = 'block';
+            winnerDisplay.textContent = 'Goats win! All tigers are blocked.';
+            winnerDisplay.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+            this.disableGameInput();
+        } else if (this.board.tigerWon) {
+            winnerDisplay.style.display = 'block';
+            winnerDisplay.textContent = 'Tigers win! They have killed 5 goats.';
+            winnerDisplay.style.backgroundColor = 'rgba(255, 165, 0, 0.7)';
+            this.disableGameInput();
+        } else {
+            winnerDisplay.style.display = 'none';
+        }
+        
+        const isComputerTurn = 
+            (this.playerSide === 'tiger' && !this.board.tigers_move) || 
+            (this.playerSide === 'goat' && this.board.tigers_move);
+        
+        if (isComputerTurn) {
+            setTimeout(() => this.makeAIMove(), 500);
+        }
+    }
+
+    disableGameInput() {
+        // Disable all game interactions when game is over
+        this.boardElement.style.pointerEvents = 'none';
+    }
+
+    resetGame() {
+        this.menu.style.display = 'block';
+        this.gameContainer.style.display = 'none';
+        this.controls.style.display = 'none';
+        
+        // Reset game display elements
+        document.getElementById('winner-display').style.display = 'none';
+        this.boardElement.style.pointerEvents = 'auto';
+        
+        this.playerSide = null;
+        document.getElementById('play-tiger').classList.remove('selected');
+        document.getElementById('play-goat').classList.remove('selected');
+    }
         }
 
         window.onload = () => {
